@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Win Win — split post</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <div id="video"><img alt="" decoding="sync" /></div>
+      <svg id="words" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350"></svg>
+      <div id="shade"></div>
+    </div>
+    <div id="controls" hidden>
+      <button id="toggle" type="button">Pauze</button>
+      <input id="scrub" type="range" min="0" max="1" step="0.0005" value="0" aria-label="Plek in de animatie" />
+      <span id="time"></span>
+    </div>
+    <script type="module" src="./split.js"></script>
+  </body>
+</html>

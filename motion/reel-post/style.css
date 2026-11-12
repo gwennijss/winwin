@@ -1,0 +1,144 @@
+@font-face {
+  font-family: "Trabat Condensed";
+  src: url("../fonts/TrabatDisplay-Condensed.otf") format("opentype");
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  src: url("../node_modules/@fontsource/hanken-grotesk/files/hanken-grotesk-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: #111;
+}
+
+/* The post. Its background and ink are set per frame. */
+#stage {
+  position: relative;
+  width: 1080px;
+  height: 1350px;
+  overflow: hidden;
+  color: var(--ink);
+}
+
+#reel {
+  position: absolute;
+  inset: 0;
+}
+
+/* Everything on the reel is placed from the middle of the post. */
+.word,
+.video {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+/* A word is drawn from the middle of a one-pixel box and spills out of it;
+   a box of no size at all would not be drawn. */
+.word {
+  width: 1px;
+  height: 1px;
+  margin: -0.5px 0 0 -0.5px;
+  overflow: visible;
+  font-family: "Trabat Condensed", sans-serif;
+  fill: currentColor;
+}
+
+.video {
+  overflow: hidden;
+  border-radius: 6px;
+  background: #1d0f66;
+}
+
+.video img {
+  position: absolute;
+  display: block;
+  max-width: none;
+}
+
+/* The drum turns away at the top and the bottom: a touch of shade there. */
+#edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgb(0 0 0 / 0.16) 0, rgb(0 0 0 / 0) 150px),
+    linear-gradient(0deg, rgb(0 0 0 / 0.16) 0, rgb(0 0 0 / 0) 150px);
+}
+
+.caption {
+  position: absolute;
+  top: 50%;
+  width: 200px;
+  transform: translateY(-50%);
+  font-family: "Hanken Grotesk", sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.35;
+  letter-spacing: 0.07em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.caption span {
+  display: block;
+  white-space: nowrap;
+}
+
+.caption.left {
+  left: 18px;
+}
+
+.caption.right {
+  right: 18px;
+}
+
+.dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.dot.tl { left: 26px; top: 26px; }
+.dot.tr { right: 26px; top: 26px; }
+.dot.bl { left: 26px; bottom: 26px; }
+.dot.br { right: 26px; bottom: 26px; }
+
+#controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 1080px;
+  padding: 16px 0;
+  font: 13px/1 ui-monospace, monospace;
+  color: #bbb;
+}
+
+#controls[hidden] {
+  display: none;
+}
+
+#controls input {
+  flex: 1;
+  accent-color: #593cff;
+}
+
+#controls button {
+  width: 6em;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 1px solid #444;
+  padding: 6px 8px;
+  cursor: pointer;
+}
