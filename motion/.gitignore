@@ -1,0 +1,6 @@
+node_modules/
+# Client footage, frames and renders stay out of git (the repo is public).
+media/
+out/
+# Trabat is a licensed typeface; copied in from ~/Library/Fonts by prepare.
+fonts/
