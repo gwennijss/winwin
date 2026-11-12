@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  /* The dark canvas the logo was designed on in Figma. */
+  --background: #1e1e1e;
+  --foreground: #ffffff;
+  /* The foreground as separate numbers, for mixing in at lower strengths. */
+  --ink: 255 255 255;
+}
+
+/* The same site on a light ground, for checking the logo both ways round. */
+:root[data-ground="light"] {
+  --background: #ffffff;
+  --foreground: #1e1e1e;
+  --ink: 30 30 30;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  /* The typeface of the social labels. */
+  --font-display: var(--font-trabat);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* The logo vectors come from Figma filled white; let them follow the text colour. */
+.winwin-logo path {
+  fill: currentColor;
+}
+
+/*
+ * Stand-in footage for the case page: out-of-focus lights drifting past, so
+ * that text is judged on something that moves. Replaced by a real video as
+ * soon as there is one.
+ */
+.footage-light {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(1.1em);
+  animation: footage-drift 16s ease-in-out infinite alternate;
+}
+
+@keyframes footage-drift {
+  from {
+    transform: translate3d(-2.5em, 0.6em, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3em, -0.8em, 0) scale(1.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footage-light {
+    animation: none;
+  }
+}
