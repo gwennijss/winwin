@@ -65,8 +65,8 @@ function PostPhoto({ file }: { file: string }) {
 /**
  * One post on a black page, as large as the page takes, and beside it a
  * photo in the same format: the brand moving and the brand standing still.
- * Nothing else but their names. The posts stand spread through the chapter,
- * and take the left and the right side in turn.
+ * Nothing else but their names. The five posts open the chapter, one after
+ * the other; in some the post is on the left, in others on the right.
  */
 const post = (file: string, filmOnRight = false) => {
   const w = 688;
@@ -242,6 +242,7 @@ export const slides: Record<string, ComponentType> = {
   "toep-post-billboard": post("billboard"),
   "toep-post-split": post("split", true),
   "toep-post-reel": post("reel"),
-  "toep-formaten": Formaten,
+  // Shown in the chapter on what goes over a video, after the pages on the label.
+  "beeld-formaten": Formaten,
   "toep-linkedin": LinkedIn,
 };
