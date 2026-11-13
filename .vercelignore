@@ -1,0 +1,13 @@
+# What is uploaded when the site is deployed from this folder. With this file
+# present the .gitignore is not used for that, so the campaign footage, the
+# stills, the printed presentation and the licensed typefaces go up with it:
+# the live site is behind a password. Never deploy this folder to a public
+# project.
+.context
+.conductor
+.playwright-mcp
+.env*
+.next
+.git
+node_modules
+*.tsbuildinfo

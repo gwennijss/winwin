@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Choice, PortraitStage, usePlayback } from "../story/kit";
 import {
   CaseOverlay,
   FACES as FACE_TYPE,
@@ -60,32 +61,6 @@ type Props = {
   footage: ReactNode;
 };
 
-/** One of a row of choices. */
-function Choice({
-  chosen,
-  onChoose,
-  children,
-}: {
-  chosen: boolean;
-  onChoose: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={chosen}
-      onClick={onChoose}
-      className={`cursor-pointer border px-3 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--ink))] ${
-        chosen
-          ? "border-[rgb(var(--ink)/0.80)] text-[rgb(var(--ink))]"
-          : "border-[rgb(var(--ink)/0.14)] text-[rgb(var(--ink)/0.55)] hover:text-[rgb(var(--ink))]"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
 /**
  * The case overlay on a portrait video, with the things worth comparing next
  * to it: the typeface of the running text and the colour of the panel.
@@ -94,98 +69,28 @@ export function CaseStudy({ text, footage }: Props) {
   const [face, setFace] = useState<TitleFace>("semi");
   const [font, setFont] = useState(1);
   const [tone, setTone] = useState<PanelTone>("dark");
-  const [labelText, setLabelText] = useState<LabelTextMotion>("rise");
+  const [labelText, setLabelText] = useState<LabelTextMotion>("letters");
   const [caps, setCaps] = useState(false);
-  const [playing, setPlaying] = useState(true);
-  const timeline = useRef<gsap.core.Timeline | null>(null);
-  const scrubber = useRef<HTMLInputElement>(null);
-
-  // Keeps the scrubber level with the animation without redrawing the page
-  // on every frame.
-  const follow = useCallback((next: gsap.core.Timeline | null) => {
-    timeline.current = next;
-    if (!next) return;
-    setPlaying(!next.paused());
-    next.eventCallback("onUpdate", () => {
-      if (scrubber.current) {
-        scrubber.current.value = String(next.time() / next.duration());
-      }
-    });
-  }, []);
-
-  const toggle = () => {
-    const now = timeline.current;
-    if (!now) return;
-    now.paused(!now.paused());
-    setPlaying(!now.paused());
-  };
-
-  const scrub = (share: number) => {
-    const now = timeline.current;
-    if (!now) return;
-    now.pause().time(share * now.duration());
-    setPlaying(false);
-  };
-
-  const still = () => {
-    timeline.current?.pause().time(READABLE);
-    setPlaying(false);
-  };
+  const playback = usePlayback(READABLE);
 
   return (
     <div className="grid items-start gap-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-16">
-      <div className="flex flex-col gap-4">
-        {/* A portrait video, 9:16. Everything on it is sized in 27ths of its
-            width, so it looks the same at any size: 40 pixels on 1080. */}
-        <div
-          className="relative aspect-[9/16] w-[calc(min(82vh,900px)*9/16)] max-w-full overflow-hidden"
-          style={{ containerType: "inline-size" }}
-        >
-          <div className="absolute inset-0 text-[calc(100cqw/27)]">
-            {footage}
-            {/* Clear of what the apps put over a video: the buttons down the
-                right-hand side and the caption along the bottom. */}
-            <div className="absolute bottom-[17%] left-[5.5%] w-[76%]">
-              <CaseOverlay
-                text={text}
-                tone={tone}
-                bodyFont={BODY_FONTS[font].family}
-                face={face}
-                caps={caps}
-                labelText={labelText}
-                onTimeline={follow}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 font-mono text-[11px] tracking-wide text-[rgb(var(--ink)/0.55)]">
-          <button
-            type="button"
-            onClick={toggle}
-            className="w-[5.5em] cursor-pointer text-left transition-colors hover:text-[rgb(var(--ink))]"
-          >
-            {playing ? "Pauze" : "Speel af"}
-          </button>
-          <input
-            ref={scrubber}
-            type="range"
-            min={0}
-            max={1}
-            step={0.001}
-            defaultValue={0}
-            aria-label="Plek in de animatie"
-            onChange={(event) => scrub(Number(event.target.value))}
-            className="min-w-0 flex-1 accent-[#593CFF]"
+      <PortraitStage playback={playback}>
+        {footage}
+        {/* Clear of what the apps put over a video: the buttons down the
+            right-hand side and the caption along the bottom. */}
+        <div className="absolute bottom-[17%] left-[5.5%] w-[76%]">
+          <CaseOverlay
+            text={text}
+            tone={tone}
+            bodyFont={BODY_FONTS[font].family}
+            face={face}
+            caps={caps}
+            labelText={labelText}
+            onTimeline={playback.follow}
           />
-          <button
-            type="button"
-            onClick={still}
-            className="cursor-pointer transition-colors hover:text-[rgb(var(--ink))]"
-          >
-            Eindbeeld
-          </button>
         </div>
-      </div>
+      </PortraitStage>
 
       <div className="flex max-w-[52ch] flex-col gap-10">
         <section className="flex flex-col gap-4">
@@ -295,9 +200,8 @@ export function CaseStudy({ text, footage }: Props) {
               tekst binnenkomt kies je hierboven.
             </li>
             <li>
-              Het tekstvlak zakt uit de onderkant van het label, op de
-              breedte van het label. Pas als het beneden is, wordt het
-              breder naar rechts.
+              Het tekstvlak wordt uit de hoek onder het paarse vak
+              getrokken, in één beweging naar beneden en naar rechts.
             </li>
             <li>
               Als het vlak stilstaat komt de tekst: de titel per regel omhoog
@@ -305,9 +209,9 @@ export function CaseStudy({ text, footage }: Props) {
               als laatste.
             </li>
             <li>
-              Bij het weggaan verdwijnt eerst de tekst. Daarna wordt het lege
-              vlak smaller en trekt het omhoog, en als laatste pakt het label
-              zich in.
+              Bij het weggaan verdwijnt eerst de tekst. Daarna trekt het lege
+              vlak zich in één beweging terug in dezelfde hoek, en als
+              laatste pakt het label zich in.
             </li>
           </ol>
         </section>

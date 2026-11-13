@@ -16,23 +16,21 @@ const AT = {
   box: 4,
   /** The label's bottom corners straighten, so the panel can join on. */
   join: 8,
-  /** The panel drops out of the label's underside. */
+  /** The panel is pulled out of the corner under the label, in one move. */
   panel: 9,
-  /** Only when it is down does the panel widen to the right. */
-  widen: 11.5,
-  /** The panel has a hair left to travel here, and looks at rest. */
-  title: 14.25,
-  body: 15.75,
-  figures: 17.25,
+  /** The panel has a hair left to settle here, and looks at rest. */
+  title: 12,
+  body: 13.5,
+  figures: 15,
   /** Everything is in place and can be read. */
-  readable: 21,
+  readable: 19,
   /** The text goes first. */
-  leave: 47,
+  leave: 45,
   /** The panel only draws back once the text is gone. */
-  panelBack: 50.5,
+  panelBack: 48.5,
   /** The label packs itself away. */
-  pack: 56.5,
-  end: 62,
+  pack: 52,
+  end: 58,
 } as const;
 
 /** When everything can be read, in seconds: where a still of the overlay is taken. */
@@ -128,8 +126,8 @@ type Props = {
  *
  * 1. the label builds itself as on the label page, and its text arrives in
  *    one of the ways in `labelText.ts`;
- * 2. the panel drops out of the label's underside at the label's width, and
- *    only when it is down widens to the right;
+ * 2. the panel is pulled out of the corner under the label's square, down
+ *    and to the right in one move;
  * 3. only when the panel is at rest, the title rises line by line from
  *    behind an edge, the sentences come in word by word, and the figures
  *    rise last.
@@ -145,7 +143,7 @@ export function CaseOverlay({
   bodyFont,
   face = "semi",
   caps = false,
-  labelText = "rise",
+  labelText = "letters",
   onTimeline,
 }: Props) {
   const root = useRef<HTMLDivElement>(null);
@@ -211,6 +209,10 @@ export function CaseOverlay({
       // that line is in the label too, unseen, and gives the label its width.
       const size = parseFloat(getComputedStyle(mask.current).fontSize);
       const frame = mask.current.getBoundingClientRect();
+      // Measurements on screen are in the pixels that are seen. When the
+      // overlay sits on something that is shown scaled, such as a slide of
+      // the presentation, they differ from its own pixels by this much.
+      const zoom = frame.width / mask.current.offsetWidth || 1;
       const range = document.createRange();
       const boxes: DOMRect[] = [];
       [serviceText.current, clientText.current].forEach((part, second) => {
@@ -225,7 +227,7 @@ export function CaseOverlay({
       const shown = pieces.current.filter(
         (piece): piece is HTMLSpanElement => piece !== null,
       );
-      const em = (pixels: number) => `${(pixels / size).toFixed(4)}em`;
+      const em = (pixels: number) => `${(pixels / zoom / size).toFixed(4)}em`;
       shown.forEach((piece, index) => {
         const place = boxes[index];
         piece.style.left = em(place.left - frame.left);
@@ -235,8 +237,6 @@ export function CaseOverlay({
           piece.style.width = em(place.width);
         }
       });
-      // The panel sets off at the width of the label above it.
-      const labelWide = label.current.offsetWidth / panel.current.offsetWidth;
 
       const timeline = gsap.timeline({
         repeat: -1,
@@ -259,7 +259,7 @@ export function CaseOverlay({
         { scaleX: 0, borderBottomRightRadius: CORNER },
         0,
       );
-      timeline.set(panelFill.current, { scaleX: labelWide, scaleY: 0 }, 0);
+      timeline.set(panelFill.current, { scale: 0 }, 0);
       timeline.set(titleLines.current, { yPercent: 115, autoAlpha: 1 }, 0);
       timeline.set(words.current, { y: "0.45em", autoAlpha: 0 }, 0);
       timeline.set(figureValues.current, { yPercent: 115, autoAlpha: 1 }, 0);
@@ -315,18 +315,17 @@ export function CaseOverlay({
           line: line.current,
           pieces: shown,
           letters: shown.filter((piece) => !piece.dataset.divider),
-          reach: boxes.map((place) => place.right - frame.left),
+          reach: boxes.map((place) => (place.right - frame.left) / zoom),
           size,
-          drop: frame.height,
+          drop: frame.height / zoom,
         },
         AT.box,
       );
 
       // 2. The panel. The label's bottom corners straighten first, so the
-      // two meet in a straight line. Then the panel drops at the label's
-      // width, and only when it is down does it widen to the right: two
-      // moves, one after the other, so that neither has to hurry. Run
-      // together they read as one fast diagonal move.
+      // two meet in a straight line. Then the panel is pulled out of its
+      // top left-hand corner, under the label's square, like a sheet drawn
+      // out by its far corner: one move, down and to the right at once.
       timeline.to(
         tile.current,
         { borderBottomLeftRadius: "0em", duration: counts(1), ease: "none" },
@@ -339,15 +338,9 @@ export function CaseOverlay({
       );
       timeline.fromTo(
         panelFill.current,
-        { scaleY: 0 },
-        { scaleY: 1, duration: counts(3), ease: UNFOLD },
+        { scale: 0 },
+        { scale: 1, duration: counts(3.5), ease: UNFOLD },
         counts(AT.panel),
-      );
-      timeline.fromTo(
-        panelFill.current,
-        { scaleX: labelWide },
-        { scaleX: 1, duration: counts(3), ease: FLOW },
-        counts(AT.widen),
       );
 
       // 3. The text, which waits until the panel has all but come to rest. The title is
@@ -426,28 +419,23 @@ export function CaseOverlay({
         leave + counts(1),
       );
 
-      // Only when the panel is empty does it draw back, the way it came but
-      // the other way round: in first, and when it is narrow, up.
+      // Only when the panel is empty does it draw back, the way it came:
+      // into its top left-hand corner, in one move.
       const back = counts(AT.panelBack);
       timeline.to(
         panelFill.current,
-        { scaleX: labelWide, duration: counts(3), ease: FLOW },
+        { scale: 0, duration: counts(3), ease: FLOW },
         back,
-      );
-      timeline.to(
-        panelFill.current,
-        { scaleY: 0, duration: counts(3), ease: FLOW },
-        back + counts(2.75),
       );
       timeline.to(
         tile.current,
         { borderBottomLeftRadius: CORNER, duration: counts(1), ease: "none" },
-        back + counts(5),
+        back + counts(2.25),
       );
       timeline.to(
         box.current,
         { borderBottomRightRadius: CORNER, duration: counts(1), ease: "none" },
-        back + counts(5),
+        back + counts(2.25),
       );
 
       // Last, the label packs itself away as on the label page.
@@ -576,7 +564,7 @@ export function CaseOverlay({
                 <span ref={serviceText}>{text.service}</span>
                 <span
                   ref={divider}
-                  className="mx-[0.36em] inline-block size-[0.24em] align-[0.205em]"
+                  className="mx-[0.2em] inline-block size-[0.24em] align-[0.205em]"
                 />
                 <span ref={clientText}>{text.client}</span>
               </span>
@@ -597,7 +585,7 @@ export function CaseOverlay({
                         }}
                         data-divider="true"
                         className="absolute block size-[0.24em] rounded-[0.03em]"
-                        style={{ background: BRAND.violet }}
+                        style={{ background: BRAND.dark }}
                       />
                     ) : (
                       <span

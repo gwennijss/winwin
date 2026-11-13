@@ -1,4 +1,4 @@
-import { Hanken_Grotesk, Instrument_Sans } from "next/font/google";
+import { Anton, Hanken_Grotesk, Instrument_Sans } from "next/font/google";
 import localFont from "next/font/local";
 
 /**
@@ -46,4 +46,14 @@ export const instrument = Instrument_Sans({
 export const hanken = Hanken_Grotesk({
   subsets: ["latin"],
   variable: "--font-hanken",
+});
+
+/**
+ * Not a typeface of the brand. It is on the stats page only to show what a
+ * much taller, heavier face does to a number, next to Trabat.
+ */
+export const anton = Anton({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-anton",
 });

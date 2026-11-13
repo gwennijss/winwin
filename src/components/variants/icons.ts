@@ -1,24 +1,22 @@
 /**
  * The signs of a post doing well, drawn for the reel in the Jackpot variant.
- * Each is a path in a box of 100 by 100, kept as plain and heavy as the
- * letters of the logo.
+ * Each is a path in a box of 100 by 100. They are not stock signs: each is
+ * built from the logo's own two shapes, the block and the diamond, with the
+ * same straight sides and the same weight as its letters.
  */
 
-/** Likes. */
-export const HEART =
-  "M50 90C22 68 5 51 5 32C5 17 16 7 30 7C39 7 46 11 50 19C54 11 61 7 70 7C84 7 95 17 95 32C95 51 78 68 50 90Z";
+/** Likes: a heart made of two diamonds, side by side on one point. */
+export const HEART = "M50 90L2 42L29 15L50 36L71 15L98 42Z";
 
-/** Comments. */
+/** Comments: a block that speaks, with the diamond as what it says. */
 export const COMMENT =
-  "M16 9H84A12 12 0 0 1 96 21V59A12 12 0 0 1 84 71H50L27 92V71H16A12 12 0 0 1 4 59V21A12 12 0 0 1 16 9Z";
+  "M6 10H94V72H54L32 94V72H6Z" + "M50 24L67 41L50 58L33 41Z";
 
-/** Views: an eye, with the pupil left open. */
-export const EYE =
-  "M2 50C18 25 34 15 50 15C66 15 82 25 98 50C82 75 66 85 50 85C34 85 18 75 2 50Z" +
-  "M50 33A17 17 0 1 0 50 67A17 17 0 1 0 50 33Z";
+/** Views: the diamond pulled wide into an eye, with a block for a pupil. */
+export const EYE = "M2 50L50 16L98 50L50 84Z" + "M38 38H62V62H38Z";
 
-/** Shares: a paper plane. */
-export const SHARE = "M4 44L96 8L60 94L46 60Z";
+/** Shares: a block that goes somewhere, its head a half diamond. */
+export const SHARE = "M6 36H52V12L96 50L52 88V64H6Z";
 
-/** Saves: a bookmark. */
-export const SAVE = "M22 6H78V94L50 71L22 94Z";
+/** Saves: the standing block, with a diamond cut out of its foot. */
+export const SAVE = "M20 6H80V94L50 64L20 94Z";

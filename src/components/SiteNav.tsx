@@ -10,6 +10,8 @@ const LINKS = [
   { href: "/system", label: "Systeem" },
   { href: "/labels", label: "Labels" },
   { href: "/case", label: "Case" },
+  { href: "/stats", label: "Stats" },
+  { href: "/presentatie", label: "Presentatie" },
 ];
 
 /** Switches between the logo animation and the motion system built on it. */
@@ -21,6 +23,9 @@ export function SiteNav() {
   useEffect(() => {
     document.documentElement.dataset.ground = light ? "light" : "dark";
   }, [light]);
+
+  // The presentation is a screen of its own, with its own controls, and the gate shows nothing yet.
+  if (pathname.startsWith("/presentatie") || pathname.startsWith("/toegang")) return null;
 
   return (
     <nav className="fixed inset-x-0 top-0 z-10 flex gap-5 px-6 py-5 font-mono text-[11px] tracking-wide sm:px-10">

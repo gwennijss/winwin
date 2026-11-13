@@ -1,0 +1,313 @@
+/*
+  The brand presentation. This file is only loaded on /presentatie.
+
+  The viewer around the deck is the brand's dark, a shade deeper around the
+  stage.
+*/
+.deck-root {
+  --deck-ink: #252526;
+  --deck-surround: #151516;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+.deck-root button {
+  cursor: pointer;
+}
+.deck-root :focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* ───────────────────────────── The slide ─────────────────────────────
+   A sealed 1920 × 1080 surface. Every inherited text property is restated
+   here so it renders the same live, as a thumbnail and on a PDF page. */
+.slide {
+  --violet: #593cff;
+  --dark: #252526;
+  --light: #f3f6ff;
+  --deep: #1d0f66;
+  --lilac: #c9c0ff;
+
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--dark);
+  color: var(--light);
+  font-family: var(--font-hanken), "Helvetica Neue", Arial, sans-serif;
+  font-size: 24px;
+  line-height: 34px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-align: left;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+}
+.slide ::selection {
+  background: rgb(89 60 255 / 0.4);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───────────────────────────── Grounds ─────────────────────────────
+   The five colours as a ground. Each sets its own reading colours, and the
+   `--ink` and `--background` the site's own components draw with, so a
+   loader or a button from the site sits right on any of them. */
+.ww {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.ww--dark {
+  background-color: var(--dark);
+  color: var(--light);
+  --fg: 243 246 255;
+  --ink: 243 246 255;
+  --background: #252526;
+  --accent: var(--lilac);
+}
+.ww--light {
+  background-color: var(--light);
+  color: var(--dark);
+  --fg: 37 37 38;
+  --ink: 37 37 38;
+  --background: #f3f6ff;
+  --accent: var(--violet);
+}
+.ww--violet {
+  background-color: var(--violet);
+  color: var(--light);
+  --fg: 243 246 255;
+  --ink: 243 246 255;
+  --background: #593cff;
+  --accent: var(--deep);
+}
+.ww--deep {
+  background-color: var(--deep);
+  color: var(--light);
+  --fg: 243 246 255;
+  --ink: 243 246 255;
+  --background: #1d0f66;
+  --accent: var(--lilac);
+}
+.ww--lilac {
+  background-color: var(--lilac);
+  color: var(--deep);
+  --fg: 29 15 102;
+  --ink: 29 15 102;
+  --background: #c9c0ff;
+  --accent: var(--violet);
+}
+/* Restated on every ground, so a field in another tone reads its own greys. */
+.ww--dark,
+.ww--light,
+.ww--violet,
+.ww--deep,
+.ww--lilac {
+  --mute: rgb(var(--fg) / 0.56);
+  --soft: rgb(var(--fg) / 0.84);
+  --line: rgb(var(--fg) / 0.16);
+}
+.slide .mute {
+  color: var(--mute);
+}
+.slide .soft {
+  color: var(--soft);
+}
+.slide .accent {
+  color: var(--accent);
+}
+
+/* ───────────────────────────── Type ─────────────────────────────
+   In px on the 1920 stage. Trabat Display Condensed for labels, figures and
+   what is read from across the room; Semi Condensed for titles; Hanken
+   Grotesk for everything that is read as a sentence. Nothing that has to be
+   read is smaller than 18 px. */
+.f-label {
+  font-family: var(--font-trabat), "Arial Narrow", sans-serif;
+  font-weight: 400;
+}
+.f-title {
+  font-family: var(--font-trabat-semi), var(--font-trabat), "Arial Narrow", sans-serif;
+  font-weight: 400;
+}
+/* The chapter title of a divider. */
+.t-chapter {
+  font-family: var(--font-trabat-semi), var(--font-trabat), "Arial Narrow", sans-serif;
+  font-weight: 400;
+  font-size: 250px;
+  line-height: 218px;
+  letter-spacing: -0.015em;
+}
+/* A line that carries a page. */
+.t-display {
+  font-family: var(--font-trabat-semi), var(--font-trabat), sans-serif;
+  font-weight: 400;
+  font-size: 150px;
+  line-height: 148px;
+  letter-spacing: -0.012em;
+}
+.t-statement {
+  font-family: var(--font-trabat-semi), var(--font-trabat), sans-serif;
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 68px;
+  letter-spacing: -0.005em;
+}
+/* The page title in the panel on the left. */
+.t-title {
+  font-family: var(--font-trabat-semi), var(--font-trabat), sans-serif;
+  font-weight: 400;
+  font-size: 58px;
+  line-height: 60px;
+  letter-spacing: -0.005em;
+}
+.t-card {
+  font-family: var(--font-trabat-semi), var(--font-trabat), sans-serif;
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 44px;
+}
+/* A figure: a number that is a result or a measure. */
+.t-figure {
+  font-family: var(--font-trabat), "Arial Narrow", sans-serif;
+  font-weight: 400;
+  font-size: 72px;
+  line-height: 72px;
+}
+.t-body {
+  font-size: 26px;
+  line-height: 37px;
+}
+.t-aside {
+  font-size: 22px;
+  line-height: 32px;
+  font-weight: 450;
+}
+/* Labels in fields and the signage. */
+.t-sign {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+/* What a figure counts: small capitals, set apart, as under a result on a video. */
+.t-cap {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* A label is set in the semi condensed width, like the titles. */
+.slide .font-display[class*="h-[2.4em]"] {
+  font-family: var(--font-trabat-semi), var(--font-trabat), sans-serif;
+}
+
+/* ───────────────────────────── Before the brand ─────────────────────────────
+   The deck shows more of the brand as it goes. Until it has got to the
+   typefaces (chapter 4), every page is set in a plain sans: the brand's
+   typefaces are swapped for Helvetica here, with the weights and spacing a
+   grotesque needs at these sizes. */
+.pre-type {
+  --plain: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-trabat: var(--plain);
+  --font-trabat-semi: var(--plain);
+  --font-hanken: var(--plain);
+  font-family: var(--plain);
+  letter-spacing: -0.006em;
+}
+.pre-type .f-label,
+.pre-type .f-title {
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+.pre-type .t-chapter {
+  font-size: 210px;
+  line-height: 190px;
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+.pre-type .t-display {
+  font-size: 128px;
+  line-height: 126px;
+  font-weight: 500;
+  letter-spacing: -0.05em;
+}
+.pre-type .t-statement {
+  font-size: 52px;
+  line-height: 60px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+.pre-type .t-title {
+  font-size: 48px;
+  line-height: 52px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+.pre-type .t-card {
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+.pre-type .t-figure {
+  font-size: 62px;
+  line-height: 68px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+.pre-type .t-aside {
+  font-weight: 400;
+}
+
+/* The line that stands where the next letter is typed. */
+@keyframes deck-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Print: one slide per page, exact pixels. */
+@page {
+  size: 1920px 1080px;
+  margin: 0;
+}
+@media print {
+  html,
+  body {
+    background: #252526 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+  }
+  .print-page {
+    break-after: page;
+    page-break-after: always;
+  }
+  .print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* The dev tools of the framework never belong on a printed page. */
+@media print {
+  nextjs-portal {
+    display: none !important;
+  }
+}

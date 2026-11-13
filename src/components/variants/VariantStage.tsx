@@ -42,10 +42,12 @@ function blockAttributes(block: Block, offset: number) {
 type Props = {
   variant: Variant;
   className?: string;
+  /** Shows the first frame and does not play: for a printed page. */
+  still?: boolean;
 };
 
 /** Plays one variant of the logo animation, looping while it is on screen. */
-export function VariantStage({ variant, className }: Props) {
+export function VariantStage({ variant, className, still = false }: Props) {
   const svg = useRef<SVGSVGElement>(null);
   const leftWord = useRef<SVGGElement>(null);
   const rightWord = useRef<SVGGElement>(null);
@@ -94,7 +96,9 @@ export function VariantStage({ variant, className }: Props) {
         Object.assign(el, { timeline });
       }
 
-      const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const calm =
+        still ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (calm) timeline.pause().time(0);
 
       // Only play while visible: eight loops at once is a lot to ask.
@@ -104,7 +108,7 @@ export function VariantStage({ variant, className }: Props) {
       watcher.observe(el);
       return () => watcher.disconnect();
     },
-    { dependencies: [variant, offset] },
+    { dependencies: [variant, offset, still] },
   );
 
   const clipId = `band-${variant.id}`;

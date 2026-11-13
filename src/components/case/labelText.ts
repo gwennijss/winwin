@@ -20,7 +20,7 @@ export const LABEL_TEXT_MOTIONS = [
   {
     key: "letters",
     name: "Letter voor letter",
-    note: "Dezelfde beweging als de titel, maar elke letter apart, van links naar rechts.",
+    note: "De gekozen variant. Dezelfde beweging als de titel, maar elke letter apart, van links naar rechts.",
   },
   {
     key: "concertina",
