@@ -9,16 +9,24 @@ import type { DeckMedia } from "./parts";
  * holds those stills too, so it is made here (`pnpm pdf`) and not checked in;
  * without it the deck leaves the download button out. The animated posts are
  * in `public/media/posts`, each as `name.mp4` with a still `name.jpg` beside
- * it, and stay out of the repository for the same reason. Runs on the server only.
+ * it, and stay out of the repository for the same reason. The photos in
+ * `public/media/photos` are single frames chosen from the footage, cut for
+ * the page that shows them: also kept out. Runs on the server only.
  */
 export function findDeckMedia(): DeckMedia {
   const media = path.join(process.cwd(), "public", "media");
   const stills = path.join(media, "stills");
   const posts = path.join(media, "posts");
+  const photos = path.join(media, "photos");
   return {
     posts: existsSync(posts)
       ? readdirSync(posts)
           .filter((file) => file.endsWith(".mp4"))
+          .map((file) => file.slice(0, -4))
+      : [],
+    photos: existsSync(photos)
+      ? readdirSync(photos)
+          .filter((file) => file.endsWith(".jpg"))
           .map((file) => file.slice(0, -4))
       : [],
     pdf: existsSync(path.join(process.cwd(), "public", "deck", "Win-Win-Brand-Presentation.pdf")),

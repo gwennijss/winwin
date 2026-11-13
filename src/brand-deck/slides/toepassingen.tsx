@@ -3,7 +3,7 @@
 import { useCallback, type ComponentType } from "react";
 import { StatBlocks, STATS_STILL, type Pair } from "@/components/stats/StatBlocks";
 import { Fade, Lines, Unfold, useStill } from "@/deck/motion";
-import { Block, Corner, DARK, DEEP, Field, FW, LabelDivider, LIGHT, LILAC, Picture, Reel, Stage, Tag, useMedia, VIOLET } from "../parts";
+import { Block, Corner, DARK, DEEP, Field, FW, LabelDivider, LIGHT, LILAC, Photo, Picture, Reel, Stage, Tag, useMedia, VIOLET } from "../parts";
 import { Running } from "./site";
 
 /** The label the applications carry: a service and a client, as on the case page. Both are stand-ins. */
@@ -44,12 +44,14 @@ function PostFilm({ file }: { file: string }) {
   return <video src={`/media/posts/${file}.mp4`} poster={poster} muted loop autoPlay playsInline className="absolute inset-0 size-full object-cover" />;
 }
 
-/** The photo that goes with a post: a moment from the campaign, cut to the same 4:5, with the label on it. */
+/** The photo that goes with a post: a moment from the campaign, cut to the same 4:5, with the label on it. Each post has its own, from another creator's video. */
 function PostPhoto({ file }: { file: string }) {
-  const { posts } = useMedia();
+  const { posts, photos } = useMedia();
   return (
     <>
-      {posts?.includes(file) ? (
+      {photos?.includes(`post-${file}`) ? (
+        <Photo name={`post-${file}`} />
+      ) : posts?.includes(file) ? (
         // eslint-disable-next-line @next/next/no-img-element -- a fixed still, sized by the slide
         <img src={`/media/posts/${file}-foto.jpg`} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
       ) : (

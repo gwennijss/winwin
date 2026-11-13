@@ -1,166 +1,270 @@
 "use client";
 
-import type { ComponentType, ReactNode } from "react";
-import { Fade, Lines, Pop, Rise, Rule } from "@/deck/motion";
-import { Block, Corner, DARK, DEEP, Field, FW, LabelDivider, LIGHT, LILAC, PH, Picture, Stage, Tag, VIOLET } from "../parts";
-import { Diamond } from "./merkbeeld";
+import { useRef, type ComponentType, type CSSProperties, type ReactNode } from "react";
+import { useAnimationFrame } from "motion/react";
+import { counts, Fade, Lines, Pop, Rise, Unfold, useStill } from "@/deck/motion";
+import { Corner, DARK, DEEP, Field, LabelDivider, LIGHT, LILAC, LiveTag, LogoStill, PH, Photo, Stage, Tag, VIOLET } from "../parts";
 
 /**
- * Win Win's own presentations: a campaign report, two pages of it. A deck is
- * where the brand may go all out: the line as large as the page takes, the
- * work in the formats of the block, the results in diamonds, and the colours
- * as whole fields.
+ * Win Win's own presentations: three pages of a campaign report. They are
+ * built from what the brand puts over a video: the work runs to the edge of
+ * the page, the label names it, a dark panel holds the text and results
+ * stand in blocks of colour. Every page comes in with the brand's own moves,
+ * the figures count up, and the pictures keep moving a little.
+ *
+ * The client, the figures and the creators' following are stand-ins.
  */
 
-const HALF = FW / 2;
+/* ───────────────────────────── What moves ───────────────────────────── */
 
-/** What the report is, up the right-hand edge of every page. */
-function Spine({ tone = "light" }: { tone?: "light" | "dark" }) {
+/**
+ * A figure that counts up to its value, with a comma for the decimals. In
+ * the PDF and the overview it stands at its value.
+ */
+function Count({ to, decimals = 0, prefix = "", suffix = "", at = 0, dur = 6 }: { to: number; decimals?: number; prefix?: string; suffix?: string; at?: number; dur?: number }) {
+  const still = useStill();
+  const ref = useRef<HTMLSpanElement>(null);
+  const from = useRef<number | null>(null);
+  const text = (value: number) => prefix + value.toFixed(decimals).replace(".", ",") + suffix;
+
+  useAnimationFrame((ms) => {
+    if (still || !ref.current) return;
+    from.current ??= ms;
+    const t = Math.min(1, Math.max(0, ((ms - from.current) / 1000 - counts(at)) / counts(dur)));
+    // Fast at first, then slowing into the value.
+    const next = text(to * (1 - (1 - t) ** 4));
+    if (ref.current.textContent !== next) ref.current.textContent = next;
+  });
+
   return (
-    <Fade at={3} className="t-cap absolute" style={{ right: 26, top: 56, writingMode: "vertical-rl", fontSize: 13, lineHeight: "16px", letterSpacing: "0.1em", color: tone === "light" ? LIGHT : DARK, opacity: 0.72 }}>
-      Campagnerapport — De Kuyper
+    <span ref={ref} className="tabular">
+      {text(still ? to : 0)}
+    </span>
+  );
+}
+
+/**
+ * A picture that comes in a little closer and settles, and then keeps
+ * breathing slowly, so a page of stills does not stand dead still.
+ */
+function Drift({ at = 0, origin = "50% 40%", children }: { at?: number; origin?: string; children: ReactNode }) {
+  const still = useStill();
+  const ref = useRef<HTMLDivElement>(null);
+  const from = useRef<number | null>(null);
+
+  useAnimationFrame((ms) => {
+    if (still || !ref.current) return;
+    from.current ??= ms;
+    const t = Math.max(0, (ms - from.current) / 1000 - counts(at));
+    const settle = 0.12 * Math.exp(-t / 1.1);
+    const breathe = 0.018 * (1 - Math.cos((2 * Math.PI * t) / 14));
+    ref.current.style.transform = `scale(${(1 + settle + breathe).toFixed(4)})`;
+  });
+
+  return (
+    <div ref={ref} className="absolute inset-0" style={{ transformOrigin: origin, willChange: "transform" }}>
+      {children}
+    </div>
+  );
+}
+
+/** What a page of Win Win's own deck carries in its top right corner: the logo and the page number. */
+function DeckSign({ page, ink = LIGHT }: { page: string; ink?: string }) {
+  return (
+    <Fade at={2} className="t-sign absolute flex items-center" style={{ right: 48, top: 38, color: ink, zIndex: 6, gap: 8 }}>
+      <LogoStill width={160} />
+      <span className="tabular">{page}</span>
     </Fade>
   );
 }
 
-/* ───────────────────────────── The opening page ───────────────────────────── */
+/** A soft shade under the top edge, so the signage reads on any picture. */
+const TopShade = ({ style }: { style: CSSProperties }) => (
+  <div aria-hidden className="pointer-events-none absolute" style={{ top: 0, height: 200, background: "linear-gradient(rgb(13 13 14 / 0.46), rgb(13 13 14 / 0))", zIndex: 2, ...style }} />
+);
 
-/** A result in a diamond drawn as a line: the figure and what it counts stand level inside it. */
-function Result({ cx, cy, side, at, value, caption, size = 88 }: { cx: number; cy: number; side: number; at: number; value: string; caption: string; size?: number }) {
+/** A result in a block of colour: the figure, and under it what it counts. */
+function Result({ left, right, bottom = 64, width, height, ground, ink, at, size, children, caption, top = false }: { left?: number; right?: number; bottom?: number; width: number; height: number; ground: string; ink: string; at: number; size: number; children: ReactNode; caption: string; top?: boolean }) {
   return (
-    <>
-      <Diamond cx={cx} cy={cy} side={side} at={at} dur={5} style={{ border: "1.5px solid rgb(243 246 255 / 0.5)" }} />
-      <Fade at={at + 3} className="absolute text-center" style={{ left: cx - side / 2, width: side, top: cy - size * 0.56 }}>
-        <div className="f-label" style={{ fontSize: size, lineHeight: `${size * 0.94}px`, color: LILAC }}>
-          {value}
-        </div>
-        <div className="t-cap" style={{ fontSize: 13, lineHeight: "18px", color: LILAC, marginTop: 2 }}>
-          {caption}
-        </div>
-      </Fade>
-    </>
+    <Pop at={at} origin="left bottom" className="absolute flex flex-col justify-between" style={{ left, right, bottom, width, height, padding: "22px 26px", background: ground, color: ink, zIndex: 4 }}>
+      {top && <div className="t-cap">{caption}</div>}
+      <div className="f-label" style={{ fontSize: size, lineHeight: `${Math.round(size * 0.82)}px`, letterSpacing: "-0.01em" }}>
+        {children}
+      </div>
+      {!top && <div className="t-cap">{caption}</div>}
+    </Pop>
   );
 }
 
-/** Left the work and the line, right what it brought: the question, and the answers as diamonds. */
-function Opening() {
-  const x = HALF + 72;
-  return (
-    <Stage tone="light">
-      {/* The work, in three of the block's formats. */}
-      <Field from="left" at={1.5} style={{ left: 56, top: 124, width: 380, height: 475, background: "#111", borderRadius: 4 }}>
-        <Picture n={1} live={false} position="50% 30%" />
-      </Field>
-      <Pop at={3.5} className="absolute flex items-center justify-center" style={{ left: 56, top: 629, width: 132, height: 132, background: VIOLET, color: DEEP, borderRadius: 4 }}>
-        <Block unit={0.78} />
-      </Pop>
-      <Field from="top" at={0.5} style={{ left: 466, top: 0, width: 428, height: 761, background: "#111" }}>
-        <Picture n={5} live={false} position="50% 30%" />
-        <div className="absolute" style={{ left: 22, bottom: 22 }}>
-          <Tag size={17}>Creators</Tag>
-        </div>
-      </Field>
-      <Lines at={3} className="f-title absolute" style={{ left: 50, bottom: 44, fontSize: 126, lineHeight: "114px", letterSpacing: "-0.018em" }} lines={["Twaalf creators,", "één zomer"]} />
+/* ───────────────────────────── The work ───────────────────────────── */
 
-      {/* What it brought, on the dark. */}
-      <Field tone="dark" from="right" at={0.5} style={{ left: HALF, top: 0, width: HALF, height: PH }}>
-        <Rise at={4} y={14} className="absolute" style={{ left: 420, top: 92, width: 420, fontSize: 21, lineHeight: "29px", fontWeight: 450 }}>
-          De Kuyper zette twaalf creators in, elk op het eigen kanaal en in het eigen formaat. Dit is wat het opleverde.
-        </Rise>
-        <Fade at={5} className="t-cap absolute" style={{ left: 72, top: 410 }}>
-          Resultaten De Kuyper:
-        </Fade>
-        <Lines at={5.5} className="f-title absolute" style={{ left: 68, top: 444, fontSize: 78, lineHeight: "84px", letterSpacing: "-0.01em" }} lines={["“Wat leverde het op?”"]} />
-        <Fade at={7} className="t-cap absolute" style={{ left: 72, top: 586, fontSize: 14 }}>
-          Bereik
-        </Fade>
-        <Fade at={7} className="t-cap absolute" style={{ left: 520, top: 586, fontSize: 14 }}>
-          Aandacht
-        </Fade>
-        <Rule vertical at={7} className="absolute" style={{ left: 492, top: 586, height: PH - 586, background: "rgb(243 246 255 / 0.4)" }} />
-      </Field>
-      <Result cx={x + 96} cy={950} side={214} at={8} value="12" caption="creators" size={84} />
-      <Result cx={x + 286} cy={822} side={258} at={8.5} value="4,1M" caption="weergaven" size={98} />
-      <Result cx={x + 586} cy={930} side={262} at={9} value="+38%" caption="meer bereik" size={96} />
-      <Result cx={x + 770} cy={748} side={224} at={9.5} value="74%" caption="uitgekeken" size={86} />
-      <Spine />
+const THIRDS = [
+  { name: "may-sip", position: "50% 78%" },
+  { name: "ch-cocktails", zoom: 1.5, origin: "50% 8%" },
+  { name: "may-dance", position: "50% 50%" },
+];
+
+/** A case: three moments from the campaign side by side to the edge, the text panel under its label, and two results. */
+function Work() {
+  return (
+    <Stage tone="dark" style={{ background: "#111" }}>
+      {THIRDS.map((third, i) => (
+        <Field key={third.name} from="bottom" at={i * 1.2} style={{ left: i * 640, top: 0, width: 640, height: PH, background: "#111" }}>
+          <Drift at={i * 1.2}>
+            <Photo name={third.name} n={i + 1} position={third.position} zoom={third.zoom} origin={third.origin} />
+          </Drift>
+        </Field>
+      ))}
+      <TopShade style={{ left: 0, right: 0 }} />
+      <DeckSign page="15 / 24" />
+
+      {/* The text panel: the label is its tab. */}
+      <div className="absolute" style={{ left: 64, bottom: 64, width: 640, zIndex: 4 }}>
+        <Pop at={4.5} origin="left bottom" style={{ display: "flex", width: "max-content" }}>
+          <Tag size={22}>
+            Case
+            <LabelDivider />
+            De Kuyper
+          </Tag>
+        </Pop>
+        <Unfold at={5.5} origin="top left" style={{ background: DARK, color: LIGHT, padding: "40px 44px 44px", borderRadius: "0 5px 5px 5px" }}>
+          <Lines at={7.5} className="f-title" style={{ fontSize: 64, lineHeight: "64px", letterSpacing: "-0.006em" }} lines={["Zomer in een fles."]} />
+          {[
+            ["Vraag", "Maak van een kant-en-klare cocktail hét drankje van de zomer."],
+            ["Aanpak", "Twaalf creators, elk met een eigen moment: het park, het balkon, de boot."],
+          ].map(([what, text], i) => (
+            <Rise key={what} at={9 + i} className="grid" style={{ gridTemplateColumns: "124px 1fr", marginTop: i ? 14 : 28 }}>
+              <span className="t-cap" style={{ paddingTop: 5, opacity: 0.56 }}>
+                {what}
+              </span>
+              <span className="t-aside">{text}</span>
+            </Rise>
+          ))}
+        </Unfold>
+      </div>
+
+      <Result right={304} width={240} height={176} ground={VIOLET} ink={LIGHT} at={10} size={104} caption="Weergaven">
+        <Count to={4.1} decimals={1} suffix="M" at={10.5} />
+      </Result>
+      <Result right={64} width={240} height={176} ground={LIGHT} ink={DARK} at={11} size={104} caption="Uitgekeken">
+        <Count to={74} suffix="%" at={11.5} />
+      </Result>
       <Corner />
     </Stage>
   );
 }
 
-/* ───────────────────────────── The second page ───────────────────────────── */
+/* ───────────────────────────── The creators ───────────────────────────── */
 
-const BAND = 290;
+const SIDE = 440;
+const COL = 296;
+const SHOT = 744;
 
-/** A format as a figure, with where it is for. */
-function Format({ value, children }: { value: string; children: ReactNode }) {
+const CREATORS: { name: string; photo: string; where: string; reach: number; ground: string; ink: string; zoom: number; origin: string }[] = [
+  { name: "Annabel", photo: "an-bike", where: "Instagram", reach: 212, ground: VIOLET, ink: LIGHT, zoom: 1.45, origin: "46% 30%" },
+  { name: "May", photo: "may-sip", where: "Instagram", reach: 96, ground: LIGHT, ink: DARK, zoom: 1.15, origin: "50% 30%" },
+  { name: "Anton", photo: "at-anton", where: "TikTok", reach: 48, ground: DEEP, ink: LIGHT, zoom: 1.42, origin: "42% 0%" },
+  { name: "Cassidy", photo: "ca-end", where: "TikTok", reach: 74, ground: LILAC, ink: DEEP, zoom: 1.42, origin: "50% 0%" },
+  { name: "Alexandra", photo: "al-glass", where: "Instagram", reach: 131, ground: VIOLET, ink: LIGHT, zoom: 1.5, origin: "46% 0%" },
+];
+
+/** Five of the creators side by side to the top edge, each on a block of colour with the reach in it. */
+function Creators() {
   return (
-    <div className="absolute" style={{ left: 44, right: 30, bottom: 34 }}>
-      <div className="f-label" style={{ fontSize: 150, lineHeight: "138px" }}>
-        {value}
+    <Stage tone="dark">
+      <div className="absolute" style={{ left: 40, top: 156, width: SIDE - 44 }}>
+        <Lines at={0.5} className="f-title" style={{ fontSize: 80, lineHeight: "76px", letterSpacing: "-0.01em", whiteSpace: "nowrap" }} lines={["Twaalf", "creators.", "Eén zomer."]} />
+        <Fade at={4} className="t-aside" style={{ marginTop: 34, width: 350, opacity: 0.72 }}>
+          Gekozen op wie er kijkt, niet op hoeveel. Dit zijn er vijf van de twaalf.
+        </Fade>
       </div>
-      <div style={{ fontSize: 22, lineHeight: "28px", fontWeight: 600, marginTop: 6 }}>{children}</div>
-    </div>
+      <Rise at={5} className="absolute" style={{ left: 40, bottom: 40 }}>
+        <div className="f-label" style={{ fontSize: 150, lineHeight: "122px", letterSpacing: "-0.01em", color: LILAC }}>
+          <Count to={1.3} decimals={1} suffix="M" at={5.5} dur={8} />
+        </div>
+        <div className="t-cap" style={{ marginTop: 14 }}>
+          Volgers samen
+        </div>
+      </Rise>
+
+      {CREATORS.map((c, i) => {
+        const left = SIDE + i * COL;
+        const at = 1 + i * 0.8;
+        return (
+          <div key={c.name}>
+            <Field from="top" at={at} style={{ left, top: 0, width: COL, height: SHOT, background: "#222" }}>
+              <Drift at={at} origin={c.origin}>
+                <Photo name={c.photo} n={i} zoom={c.zoom} origin={c.origin} />
+              </Drift>
+              <Pop at={at + 4} origin="left bottom" className="absolute" style={{ left: 18, bottom: 18, display: "flex" }}>
+                <Tag size={18}>{c.name}</Tag>
+              </Pop>
+            </Field>
+            <Field from="bottom" at={at + 1} style={{ left, top: SHOT, width: COL, height: PH - SHOT, background: c.ground, color: c.ink }}>
+              <div className="t-cap absolute" style={{ left: 24, top: 26 }}>
+                {c.where}
+              </div>
+              <div className="f-label absolute" style={{ left: 24, bottom: 26, fontSize: 124, lineHeight: "100px", letterSpacing: "-0.01em" }}>
+                <Count to={c.reach} suffix="K" at={at + 2} />
+              </div>
+            </Field>
+          </div>
+        );
+      })}
+      <TopShade style={{ left: SIDE, right: 0 }} />
+      <DeckSign page="09 / 24" />
+      <Corner />
+    </Stage>
   );
 }
 
-/** The work to the edge, the line and its paragraph on one edge beside it, and the formats across the foot as fields of colour. */
-function Formats() {
-  const top = PH - BAND;
-  const one = 470;
+/* ───────────────────────────── The result ───────────────────────────── */
+
+const SEAM = 800;
+
+/** One figure as large as its panel, which reaches over the seam into the picture beside it; the other results in blocks under it. */
+function Outcome() {
   return (
     <Stage tone="light">
-      <Field from="left" at={0.5} style={{ left: 0, top: 0, width: 820, height: top, background: "#111" }}>
-        <Picture n={3} live={false} position="50% 46%" />
-        <div className="absolute" style={{ left: 40, bottom: 36 }}>
-          <Tag size={24}>
+      <Field from="right" at={0.5} style={{ left: SEAM, top: 0, width: 1920 - SEAM, height: PH, background: "#222" }}>
+        <Drift at={0.5} origin="50% 30%">
+          <Photo name="ca-end" n={5} position="50% 12%" />
+        </Drift>
+        <div className="absolute" style={{ right: 64, bottom: 64 }}>
+          <LiveTag size={20} delay={2.5}>
             Boost
             <LabelDivider />
             De Kuyper
-          </Tag>
+          </LiveTag>
         </div>
       </Field>
-      <Lines at={2} className="f-title absolute" style={{ left: 1002, top: 64, fontSize: 150, lineHeight: "132px", letterSpacing: "-0.018em" }} lines={["Het werkt", "op elk", "kanaal"]} />
-      <Rise at={5} y={14} className="absolute" style={{ left: 1010, top: 522, width: 600, fontSize: 22, lineHeight: "31px", fontWeight: 450 }}>
-        <p>Dezelfde campagne staat op elk kanaal in het formaat van dat kanaal. Het label staat steeds in dezelfde hoek, de creator blijft in beeld.</p>
-        <p style={{ marginTop: 22 }}>Zo hoeft een merk niet te kiezen. Voor LinkedIn, voor Insta: maakt niet uit.</p>
-      </Rise>
+      <TopShade style={{ left: SEAM, right: 0 }} />
+      <DeckSign page="17 / 24" />
 
-      {/* The formats, across the foot of the page. */}
-      <Field tone="lilac" from="bottom" at={5.5} style={{ left: 0, top, width: one, height: BAND }}>
-        <Format value="9:16">Staand, voor Reels, TikTok en Shorts</Format>
-      </Field>
-      <Field tone="violet" from="bottom" at={6} style={{ left: one, top, width: one, height: BAND }}>
-        <Format value="4:5">De post in de feed</Format>
-      </Field>
-      <Field tone="dark" from="bottom" at={6.5} style={{ left: 2 * one, top, width: FW - 2 * one, height: BAND }}>
-        <div className="t-cap absolute" style={{ left: 64, top: 34 }}>
-          En in elk ander formaat
-        </div>
-        {[
-          ["1:1", "Vierkant, voor Instagram en LinkedIn"],
-          ["16:9", "Liggend, voor YouTube"],
-        ].map(([value, text], i) => (
-          <div key={value} className="absolute flex items-center" style={{ left: 64, right: 90, top: 78 + i * 98, height: 98, borderTop: i ? "1px solid var(--line)" : undefined }}>
-            <span className="f-label shrink-0" style={{ width: 250, fontSize: 80, lineHeight: "80px", color: LILAC }}>
-              {value}
-            </span>
-            <span style={{ fontSize: 22, lineHeight: "28px", fontWeight: 600 }}>{text}</span>
-          </div>
-        ))}
-      </Field>
-      {/* The diamond between two fields: the violet one points on to the next. */}
-      <Pop at={9} className="absolute" style={{ left: 2 * one - 30, top: top + BAND / 2 - 30, width: 60, height: 60 }}>
-        <div style={{ width: 60, height: 60, background: VIOLET, borderRadius: 2, transform: "rotate(45deg)" }} />
-      </Pop>
-      <Spine tone="dark" />
+      <Lines at={2} className="f-label absolute" style={{ left: 44, top: 190, fontSize: 520, lineHeight: "430px", letterSpacing: "-0.03em", color: VIOLET, whiteSpace: "nowrap", zIndex: 3 }} lines={[<Count key="n" to={4.1} decimals={1} suffix="M" at={2.5} dur={8} />]} />
+      <div className="absolute" style={{ left: 64, top: 640 }}>
+        <Lines at={4.5} className="f-title" style={{ fontSize: 88, lineHeight: "84px", letterSpacing: "-0.01em" }} lines={["weergaven"]} />
+        <Fade at={6.5} className="t-aside" style={{ marginTop: 8, opacity: 0.62 }}>
+          in zes weken, met twaalf creators
+        </Fade>
+      </div>
+
+      <Result left={64} width={224} height={190} ground={DARK} ink={LIGHT} at={7} size={86} caption="Uitgekeken">
+        <Count to={74} suffix="%" at={7.5} />
+      </Result>
+      <Result left={288} width={224} height={190} ground={VIOLET} ink={LIGHT} at={8} size={86} caption="Meer bereik">
+        <Count to={38} prefix="+" suffix="%" at={8.5} />
+      </Result>
+      <Result left={512} width={224} height={190} ground={DEEP} ink={LIGHT} at={9} size={86} caption="Creators">
+        <Count to={12} at={9.5} />
+      </Result>
       <Corner />
     </Stage>
   );
 }
 
 export const slides: Record<string, ComponentType> = {
-  "toep-deck-1": Opening,
-  "toep-deck-2": Formats,
+  "toep-deck-1": Work,
+  "toep-deck-2": Creators,
+  "toep-deck-3": Outcome,
 };

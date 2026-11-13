@@ -104,8 +104,9 @@ const items: OutlineItem[] = [
   { id: "toep-linkedin", title: "LinkedIn", chapter: 7, kind: "full", kern: "Het logo loopt door de omslag, een case als post." },
   { id: "toep-beeld-ruit", title: "Merkbeeld", list: "Merkbeeld, in twee beelden", chapter: 7, kind: "full", kern: "De ruit, veel te groot, met één zin ernaast." },
   { id: "toep-beeld-venster", title: "Merkbeeld", hide: true, chapter: 7, kind: "full", kern: "Het werk, gezien door de ruit." },
-  { id: "toep-deck-1", title: "Presentatie", list: "Presentatie, twee pagina's", chapter: 7, kind: "full", kern: "In een presentatie mag het merk uitpakken: de zin groot, de cijfers in ruiten." },
-  { id: "toep-deck-2", title: "Presentatie", hide: true, chapter: 7, kind: "full", kern: "Het werk tot de rand, de formaten als vlakken kleur." },
+  { id: "toep-deck-1", title: "Presentatie", list: "Presentatie, drie pagina's", chapter: 7, kind: "full", kern: "Een case in een deck: het werk tot de rand, met het tekstvlak en de cijfers eroverheen." },
+  { id: "toep-deck-2", title: "Presentatie", hide: true, chapter: 7, kind: "full", kern: "De creators naast elkaar, elk op een blok kleur met het bereik erin." },
+  { id: "toep-deck-3", title: "Presentatie", hide: true, chapter: 7, kind: "full", kern: "Eén cijfer zo groot als het vlak toelaat, naast het beeld." },
 
   { id: "volgt", title: "Wat volgt", chapter: 0, kind: "bare", kern: "Wat er staat, en wat er nog komt." },
   { id: "slot", title: "Win Win", chapter: 0, kind: "bare", kern: "Win Win." },

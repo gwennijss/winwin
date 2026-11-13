@@ -4,13 +4,13 @@ import { useRef, type ComponentType, type CSSProperties, type ReactNode } from "
 import { motion, useAnimationFrame } from "motion/react";
 import type { StateName } from "@/components/winwin-logo/geometry";
 import { counts, EASE, Fade, flow, useStill } from "@/deck/motion";
-import { Block, Corner, DARK, DEEP, Field, FW, LabelDivider, LIGHT, LILAC, LiveTag, LogoStill, PH, Picture, Stage, Tag, VIOLET } from "../parts";
+import { Block, Corner, DARK, DEEP, Field, FW, LabelDivider, LIGHT, LILAC, LiveTag, LogoStill, PH, Photo, Picture, Stage, Tag, useMedia, VIOLET } from "../parts";
 
 /**
  * Instagram: the profile as it is on a phone, in the app's dark mode. The
  * head of the profile, the highlights with the five shapes of the block as
- * their covers, and the grid: a picture of the work and a field of colour
- * in turn. Left alone the profile scrolls down to the grid and back.
+ * their covers, and the grid: a picture of the work and a post of Win Win's
+ * own in turn. Left alone the profile scrolls down to the grid and back.
  */
 
 const WHITE = "#F3F6FF";
@@ -94,11 +94,14 @@ function Post({ ground = "#111", ink = WHITE, sign, children }: { ground?: strin
   );
 }
 
-/** A picture of the work, with the label on it. */
-function Shot({ n, position, tag, reel = false }: { n: number; position?: string; tag?: ReactNode; reel?: boolean }) {
+/**
+ * A picture of the work, with the label on it. Each one is a frame from
+ * another creator's video, cut to the post's 4:5.
+ */
+function Shot({ name, n, tag, reel = false }: { name: string; n: number; tag?: ReactNode; reel?: boolean }) {
   return (
     <Post sign={reel ? <ReelSign size={19} /> : undefined}>
-      <Picture n={n} live={false} position={position} />
+      <Photo name={name} n={n} />
       {tag && (
         <div className="absolute" style={{ left: 9, bottom: 9 }}>
           <Tag size={10.5}>{tag}</Tag>
@@ -108,66 +111,81 @@ function Shot({ n, position, tag, reel = false }: { n: number; position?: string
   );
 }
 
-/** A result as a post: the figure as large as the post takes. */
-function Figure({ value, caption, ground, ink }: { value: string; caption: string; ground: string; ink: string }) {
+/**
+ * One of the animated posts from the pages before, as it stands in the
+ * grid: a frame of it. Without the frame it is the post's own still, and
+ * without that a plain field.
+ */
+function Animated({ name, ink = WHITE }: { name: string; ink?: string }) {
+  const { photos, posts } = useMedia();
+  const src = photos?.includes(`feed-${name}`) ? `/media/photos/feed-${name}.jpg` : posts?.includes(name) ? `/media/posts/${name}.jpg` : undefined;
   return (
-    <Post ground={ground} ink={ink}>
-      <div className="t-cap absolute" style={{ left: 13, top: 12, fontSize: 9.5, lineHeight: "12px", opacity: 0.8 }}>
-        De Kuyper
+    <Post ground={DEEP} ink={ink} sign={<ReelSign size={19} />}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed still, sized by the slide */}
+      {src && <img src={src} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />}
+    </Post>
+  );
+}
+
+/**
+ * A result as a post, made the way the split post is made: the figure as
+ * wide as the post, a picture of the work wedged under it, and what it
+ * counts at the foot.
+ */
+function ResultPost() {
+  return (
+    <Post ground={LILAC} ink={DEEP}>
+      <div className="absolute overflow-hidden" style={{ left: 58, top: 98, width: 74, height: 93, borderRadius: 2, background: "#111" }}>
+        <Photo name="post-reel" n={2} />
       </div>
-      <div className="absolute" style={{ left: 11, bottom: 13 }}>
-        <div className="f-label" style={{ fontSize: 82, lineHeight: "72px" }}>
-          {value}
-        </div>
-        <div className="t-cap" style={{ fontSize: 10.5, lineHeight: "14px", color: WHITE, opacity: 0.9, marginTop: 5 }}>
-          {caption}
-        </div>
+      <div className="f-label absolute" style={{ left: 9, top: 14, fontSize: 104, lineHeight: "92px", letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
+        4,1M
+      </div>
+      <div className="f-title absolute" style={{ left: 11, bottom: 9, fontSize: 30, lineHeight: "30px" }}>
+        weergaven
       </div>
     </Post>
   );
 }
 
-const say: CSSProperties = { left: 13, right: 10, top: 12, fontSize: 25, lineHeight: "26px" };
-
-const POSTS: ReactNode[] = [
-  <Shot key={0} n={4} position="50% 26%" tag="De Kuyper" reel />,
-  // The diamond far too large, as on the brand image.
-  <Post key={1} ground={VIOLET}>
-    <div className="absolute" style={{ left: -34, top: 96, width: 190, height: 190, background: DEEP, borderRadius: 6, transform: "rotate(45deg)" }} />
-    <div className="f-title absolute" style={say}>
-      Het merk wint. De creator wint.
-    </div>
-  </Post>,
-  <Shot key={2} n={1} position="50% 30%" tag="Creators" />,
-  <Figure key={3} value="4,1M" caption="weergaven" ground={DEEP} ink={LILAC} />,
-  // The work through the diamond.
-  <Post key={4} ground={LILAC} ink={DEEP} sign={<ReelSign size={19} />}>
-    <div className="absolute overflow-hidden" style={{ left: (TW - 168) / 2, top: 62, width: 168, height: 168, borderRadius: 5, transform: "rotate(45deg)", background: "#111" }}>
-      <div className="absolute" style={{ left: -35, top: -35, width: 238, height: 238, transform: "rotate(-45deg)" }}>
-        <Picture n={7} live={false} position="50% 12%" />
+/** What Win Win stands for, as the cover of a post with more than one page: two lines, the second in the soft tint. */
+function ClaimPost() {
+  return (
+    <Post ground={DEEP} ink={WHITE} sign={<Stacked />}>
+      <div className="f-title absolute" style={{ left: 11, top: 14, fontSize: 41, lineHeight: "38px", letterSpacing: "-0.012em" }}>
+        Bereik
+        <br />
+        koop je.
+        <br />
+        <span style={{ color: LILAC }}>
+          Aandacht
+          <br />
+          verdien je.
+        </span>
       </div>
-    </div>
-    <div className="f-title absolute" style={{ left: 13, top: 12, fontSize: 17, lineHeight: "19px", width: 120 }}>
-      Ertussen staat het werk.
-    </div>
-  </Post>,
-  // The four formats, as the shapes of the block.
-  <Post key={5} ground={LIGHT} ink={DARK} sign={<Stacked />}>
-    <div className="f-title absolute" style={{ ...say, right: 30 }}>
-      Elk kanaal, elk formaat.
-    </div>
-    <div className="absolute flex items-end" style={{ left: 13, bottom: 14, gap: 7, color: VIOLET }}>
-      {(["portrait", "post", "square", "landscape"] as StateName[]).map((state) => (
-        <Block key={state} state={state} unit={0.2} style={{ borderRadius: 2 }} />
-      ))}
-    </div>
-  </Post>,
-  <Shot key={6} n={3} position="50% 46%" tag="Content" />,
-  <Figure key={7} value="74%" caption="uitgekeken" ground={DARK} ink={WHITE} />,
+      <div className="absolute" style={{ left: 2, bottom: 6, color: WHITE }}>
+        <LogoStill width={88} />
+      </div>
+    </Post>
+  );
+}
+
+/**
+ * The grid, newest first. Pictures of the work and posts of Win Win's own
+ * take turns: every picture carries a label and comes from another campaign
+ * video; between them stand the animated posts, a result and a claim.
+ */
+const POSTS: ReactNode[] = [
+  <Shot key={0} name="feed-dekuyper" n={4} tag="De Kuyper" reel />,
+  <Animated key={1} name="split" />,
+  <Shot key={2} name="feed-creators" n={1} tag="Creators" />,
+  <Animated key={3} name="canvas" />,
+  <Shot key={4} name="feed-content" n={3} tag="Content" />,
+  <ResultPost key={5} />,
   <Shot
-    key={8}
-    n={5}
-    position="50% 32%"
+    key={6}
+    name="feed-boost"
+    n={7}
     reel
     tag={
       <>
@@ -177,17 +195,11 @@ const POSTS: ReactNode[] = [
       </>
     }
   />,
-  <Post key={9} ground={LIGHT} ink={DARK}>
-    <div className="absolute" style={{ left: (TW - 176) / 2, top: 50 }}>
-      <LogoStill width={176} />
-    </div>
-  </Post>,
-  <Shot key={10} n={4} position="50% 78%" />,
-  <Post key={11} ground={VIOLET} ink={DEEP}>
-    <div className="absolute" style={{ left: (TW - 68) / 2, top: 40 }}>
-      <Block unit={1} />
-    </div>
-  </Post>,
+  <Animated key={7} name="cube" />,
+  <Shot key={8} name="feed-los" n={5} />,
+  <Animated key={9} name="reel" ink={DARK} />,
+  <ClaimPost key={10} />,
+  <Animated key={11} name="billboard" />,
 ];
 
 /* ───────────────────────────── The head of the profile ───────────────────────────── */
@@ -343,13 +355,19 @@ function Phone() {
   );
 }
 
+/** The reel beside the phone: the chosen frame of it when that is there, and the running footage otherwise. */
+function Reel() {
+  const { photos } = useMedia();
+  return photos?.includes("may-sip") ? <Photo name="may-sip" position="50% 42%" /> : <Picture n={7} position="50% 35%" />;
+}
+
 /** The profile on a phone on the left, one post large on the right. */
 function Instagram() {
   return (
     <Stage tone="dark">
       <Phone />
       <Field from="right" at={1} style={{ left: FW / 2, top: 0, width: FW / 2, height: PH, background: "#111" }}>
-        <Picture n={7} position="50% 35%" />
+        <Reel />
         <div className="pointer-events-none absolute inset-0" style={{ background: "linear-gradient(rgb(20 20 21 / 0) 55%, rgb(20 20 21 / 0.72))" }} />
         <div className="absolute" style={{ left: 64, bottom: 150 }}>
           <LiveTag size={40}>De Kuyper</LiveTag>

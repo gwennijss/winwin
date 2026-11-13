@@ -20,7 +20,7 @@ The "Licht" / "Donker" switch in the top right shows everything on a light or a 
 
 The labels and the case page use Trabat Display, a commercial typeface that is not in this repository. Put the files in `src/app/fonts` first; see the note in that folder.
 
-To show pictures inside the block, put image files in `public/media`; see the note in that folder. Videos go there too (`case.mp4`, `stats.mp4`) and are kept out of the repository.
+To show pictures inside the block, put image files in `public/media`; see the note in that folder. Videos go there too (`case.mp4`, `stats.mp4`) and are kept out of the repository. The presentation also reads `public/media/photos`: single frames chosen from the campaign footage (the Instagram grid, the photo beside each post, the three deck pages). They are kept out of the repository as well; without them those pages fall back to the stills of the one video.
 
 ## Where to change things
 

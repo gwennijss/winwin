@@ -53,6 +53,8 @@ export type DeckMedia = {
   stills: string[];
   /** The animated posts that are there, by name: `/media/posts/name.mp4`, with a still `name.jpg` beside it. */
   posts?: string[];
+  /** The photos that are there, by name: `/media/photos/name.jpg`. */
+  photos?: string[];
   /** Whether the printed version is there to download. */
   pdf?: boolean;
 };
@@ -106,6 +108,26 @@ export function Picture({ n = 0, live = true, position = "center" }: { n?: numbe
     return <img src={image} alt="" draggable={false} className="absolute inset-0 size-full object-cover" style={{ objectPosition: position }} />;
   }
   return <Footage />;
+}
+
+/**
+ * A photo chosen by name from `public/media/photos`: one frame picked from
+ * the footage for the page that shows it. `zoom` and `origin` cut it in about
+ * a point. Without the file it falls back to the footage's own still `n`.
+ */
+export function Photo({ name, n = 0, position = "center", zoom, origin }: { name: string; n?: number; position?: string; zoom?: number; origin?: string }) {
+  const { photos } = useMedia();
+  if (!photos?.includes(name)) return <Picture n={n} live={false} position={position} />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- a fixed still, sized by the slide
+    <img
+      src={`/media/photos/${name}.jpg`}
+      alt=""
+      draggable={false}
+      className="absolute inset-0 size-full object-cover"
+      style={{ objectPosition: position, transform: zoom ? `scale(${zoom})` : undefined, transformOrigin: origin }}
+    />
+  );
 }
 
 /* ───────────────────────────── Grounds ───────────────────────────── */

@@ -58,5 +58,8 @@ next-env.d.ts
 # the animated posts and a still of each: they hold creators' footage
 /public/media/posts/
 
+# photos cut from the campaign footage, for the presentation: creators' footage too
+/public/media/photos/
+
 # the printed presentation: it holds stills of the campaign footage
 /public/deck/*.pdf
