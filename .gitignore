@@ -1,0 +1,65 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# playwright
+.playwright-mcp/
+
+# licensed typefaces: not for a public repository, see src/app/fonts/README.md
+/src/app/fonts/*.otf
+/src/app/fonts/*.ttf
+
+# campaign footage: clients' material, not for a public repository
+/public/media/*.mp4
+/public/media/*.mov
+/public/media/*.webm
+
+# stills taken from the campaign footage, for the presentation
+/public/media/stills/
+
+# the animated posts and a still of each: they hold creators' footage
+/public/media/posts/
+
+# photos cut from the campaign footage, for the presentation: creators' footage too
+/public/media/photos/
+
+# the printed presentation: it holds stills of the campaign footage
+/public/deck/*.pdf
